@@ -1,7 +1,7 @@
 import csv
 import sys
 from re import sub, split, match, findall, compile, IGNORECASE
-from . import setup_audio_directory as Directory
+from setup_audio_directory import format_directory, format_filename
 
 def make_ascii(text):
     return text.decode('unicode_escape').encode('ascii','ignore')
@@ -30,8 +30,8 @@ def main(inputfile,outputfile):
             new_address = fix_address(line['address'])
             line['address'] = new_address[0]
             line['group'] = new_address[1]
-            line['directory'] = Directory.format_directory(line['original_file_location'])
-            line['filename'] = Directory.format_filename(line['original_file'])
+            line['directory'] = format_directory(line['original_file_location'])
+            line['filename'] = format_filename(line['original_file'])
             dict.append(line)
         fields = [d for d in dict[0]]
 

@@ -1,42 +1,72 @@
 import csv
 import sys
-from re import sub, split, match, findall, compile, IGNORECASE
+from rename import Rename as Rename
 
-def make_ascii(text):
-    return text.decode('unicode_escape').encode('ascii','ignore')
+r = Rename()
+data = []
+fields = []
+remove_columns = [
+    'category',
+    'not_used',
+    'not_audio',
+    'combine',
+    'j_rating',
+    'm_rating',
+    'k_rating',
+    'edit',
+    'notes',
+    'sync',
+    'discussed_site',
+    'pending',
+]
+remove_row = [
+    'not_used',
+    'combine'
+]
+add_columns = [
+    'directory',
+    'filename'
+]
 
-def fix_address(address):
-    address = make_ascii(address)
-    address = sub(r'street', 'St.', address, flags=IGNORECASE)
-    address = sub(r'ave(\s+|$)', 'Ave.', address, flags=IGNORECASE)
-    address = sub(r'(\d)(nd|rd|th)$', r'\1\2 Ave.', address, flags=IGNORECASE)
-    address = sub(r'\s(n|s)\s', r' \1. ', address, flags=IGNORECASE)
+def filter_data(dictRead):
+    for line in dictRead:
+        remove = False
+        for key in remove_row:
+            if line[key] != '':
+                remove = True
 
-    group = ''
-    has_group = findall(r'[A-Z]$', address)
-    if len(has_group) > 0:
-        address = sub(r'[A-Z]$', '', address)
-        address = sub(r'\s$', '', address)
-        group = has_group[0]
+        if not remove:
+            for key in remove_columns:
+                del line[key]
+            data.append(line)
 
-    return [address,group]
+    for col in data[0]:
+        if col not in remove_columns:
+            fields.append(col)
+
+    for col in add_columns:
+        fields.append(col)
+
+def fix_data():
+    for row in data:
+        new_address = r.fix_address(row['address'])
+        row['address'] = new_address[0]
+        row['group'] = new_address[1]
+        row['directory'] = r.change_directory(row['address'])
+        row['filename'] = r.format_filename(row['original_file'])
 
 def main(inputfile,outputfile):
     with open(inputfile, 'rb') as f:
-        read = csv.DictReader(f)
-        dict = []
-        for line in read:
-            new_address = fix_address(line['address'])
-            line['address'] = new_address[0]
-            line['group'] = new_address[1]
-            dict.append(line)
-        fields = [d for d in dict[0]]
+        dictRead = csv.DictReader(f)
 
-        with open(outputfile, 'w') as output:
-            write = csv.DictWriter(output, fieldnames=fields)
-            write.writeheader()
-            for row in dict:
-                write.writerow(row)
+        filter_data(dictRead)
+        fix_data()
+
+    with open(outputfile, 'w') as output:
+        write = csv.DictWriter(output, fieldnames=fields)
+        write.writeheader()
+        for row in data:
+            write.writerow(row)
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]
