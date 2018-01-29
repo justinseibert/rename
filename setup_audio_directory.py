@@ -1,8 +1,7 @@
-from os import listdir, getcwd, renames, remove
+from os import listdir, renames, remove
 from os.path import isdir, isfile, join
 from re import sub
 
-initial_directory = getcwd()
 remove_files = [
     '_DS_Store'
 ]
@@ -10,8 +9,8 @@ ignore_files = [
     'rename.py'
 ]
 
-def enter_directory( directory ):
-    for item in listdir( directory ):
+def enter_directory(directory):
+    for item in listdir(directory):
         current = join(directory,item)
         if isdir(current):
             new_dir = join(directory,format_directory(item))
@@ -44,8 +43,6 @@ def format_directory(item):
 
     return item
 
-
-
 def format_filename(item):
     item = sub(r'(\s+|-+|_+|,|\')',r'',item)
     parts = item.split('.')
@@ -53,8 +50,7 @@ def format_filename(item):
 
     return ''.join(parts)
 
-def main():
-    enter_directory( initial_directory )
-
 if __name__ == '__main__':
-    main()
+    initial_directory = sys.argv[1]
+
+    enter_directory(initial_directory)
