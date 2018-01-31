@@ -1,0 +1,15 @@
+*.swp
+*.bak
+
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+
+*.pyc
+*.db
+*.log
+*.sql
+*.sqlite
+
+*.sh
