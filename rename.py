@@ -30,23 +30,26 @@ class Rename(object):
             group
         ]
 
-    def format_directory(self,item):
+    def preformat_directory(self,item):
         item = item.lower()
         item = sub(r'(-|_|\'|,)+',' ',item)
 
         replace = r'(\s|_)+(ave\.|street|st\.|way|block)'
-        item = sub(replace,r'_',item)
+        item = sub(replace,r'',item)
 
         add = r'(\d)(th|nd|rd)\s+'
-        item = sub(add,r'\1\2_',item)
+        item = sub(add,r'\1\2',item)
 
         fix = r'(chestnut|franklin)\s'
-        item = sub(fix,r'\1_',item)
+        item = sub(fix,r'\1',item)
 
         remove = r'(\s+|\.|\(|_*\)|_$)'
         item = sub(remove,r'',item)
 
         return item
+
+    def remove_slash_padding(self,item):
+        return sub(r'\s+/\s+',r'/',item)
 
     def change_directory(self,address):
         address = self.fix_address(address)[0]
@@ -77,3 +80,13 @@ class Rename(object):
         parts[-1] = '.' + parts[-1].lower()
 
         return ''.join(parts)
+
+    def simplify_website(self,item):
+        # http = match(r'^(https*://).*',item)
+        # if (http):
+        # else:
+        #     print('-----: '+item)
+        item = sub(r'(/home\.html|/)$',r'',item)
+        item = sub(r'^(https*://)*(www\.)*(.*)',r'\3',item)
+        # item = sub(r'*(www\.)*(.*)\/$',r'\3',item)
+        return item
