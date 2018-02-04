@@ -1,11 +1,39 @@
-from re import sub, split, match, findall, compile, IGNORECASE
+from re import sub, split, match, search, findall, compile, IGNORECASE
+import string
 
 class Rename(object):
     def make_ascii(self,text):
         return text.decode('unicode_escape').encode('ascii','ignore')
 
+    def make_unicode(self, text):
+        printable = set(string.printable)
+        text = filter(lambda a:a in printable, text)
+        text = sub(r'(.*)\s+$', r'\1', text)
+        return unicode(text).decode('unicode_escape').encode('utf-8','ignore')
+
+    def alphanumeric(self,n):
+        alphanumeric = string.digits + string.ascii_letters
+        base = len(alphanumeric)
+        result = ''
+        n = n+base
+        while n > -1:
+            i = n%base
+            result = alphanumeric[i] + result
+
+            n = n/base-1
+
+        return str(result)
+
+    def group_to_number(self,group):
+        letters = string.uppercase
+        n = search(group, letters)
+        if n is None:
+            n = 0
+        else:
+            n = n.start()
+        return n
+
     def fix_address(self,address):
-        address = self.make_ascii(address)
         # Street -> St.
         address = sub(r'street', 'St.', address, flags=IGNORECASE)
         # ave -> Ave.
@@ -75,11 +103,18 @@ class Rename(object):
 
 
     def format_filename(self,item):
+        # remove weird stuff
         item = sub(r'(\s+|-+|_+|,|\')',r'',item)
+        # split by . which may be in the title and not just before extension
         parts = item.split('.')
+        # lowercase the extension
         parts[-1] = '.' + parts[-1].lower()
 
         return ''.join(parts)
+
+    def remove_extension(self,item):
+        item = item.split('.')
+        return item[0]
 
     def simplify_website(self,item):
         # http = match(r'^(https*://).*',item)
